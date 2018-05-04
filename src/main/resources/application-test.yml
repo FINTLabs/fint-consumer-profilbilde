@@ -1,0 +1,22 @@
+fint:
+ events:
+  orgIds: mock.no
+  test-mode: true
+  queue-endpoint-enabled: true
+
+ audit:
+  test-mode: true
+
+ relations:
+  force-https: false
+  default-base-url: /
+
+ hazelcast:
+  members: localhost
+
+ thumbor:
+  url: http://localhost:8888/unsafe
+
+server:
+ context-path: ""
+ port: 8080

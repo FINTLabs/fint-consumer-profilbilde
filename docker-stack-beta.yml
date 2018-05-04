@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+  provider:
+   image: dtr.rogfk.no/fint-beta/provider:PR-9
+   ports:
+     - "8400:8080"
+   environment:
+    TZ: Europe/Oslo
+    server.context-path: /avatar/provider
+    fint.events.orgIds: "beta.no, fint.health"
+    fint.events.component: beta
+    fint.events.env: beta
+    fint.audit.mongo.hostname: 152.93.213.138
+    fint.audit.mongo.databasename: fint-audit-beta
+    fint.hazelcast.members: consumer,provider
+   deploy:
+    placement:
+     constraints:
+      - node.role == worker
+    replicas: 1
+    restart_policy:
+     condition: on-failure
+     delay: 5s
+     max_attempts: 3
+     window: 120s
+
+  thumbor:
+   image: dtr.rogfk.no/k48402217/thumbor:latest
+   deploy:
+    placement:
+     constraints:
+      - node.role == worker
+    replicas: 1
+    restart_policy:
+     condition: on-failure
+     delay: 5s
+     max_attempts: 3
+     window: 120s
+
+  consumer:
+   image: dtr.rogfk.no/fint-beta/consumer-avatar
+   ports:
+     - "8401:8080"
+   depends_on:
+     - thumbor
+   environment:
+    TZ: Europe/Oslo
+    server.context-path: /avatar
+    fint.events.orgIds: "beta.no, fint.health"
+    fint.events.component: beta
+    fint.events.env: beta
+    fint.relations.default-base-url: "https://beta.felleskomponent.no"
+    fint.audit.mongo.hostname: 152.93.213.138
+    fint.audit.mongo.databasename: fint-audit-beta
+    fint.hazelcast.members: consumer,provider
+    fint.cache.manager: hazelcast
+    fint.consumer.default-org-id: "beta.no"
+    fint.consumer.override-org-id: "true"
+   deploy:
+    placement:
+     constraints:
+      - node.role == worker
+    replicas: 1
+    restart_policy:
+     condition: on-failure
+     delay: 5s
+     max_attempts: 3
+     window: 120s
+
+  health-adapter:
+     image: dtr.rogfk.no/fint-beta/health-adapter:1.1.0
+     #ports:
+     #  - "8402:8080"
+     environment:
+      TZ: Europe/Oslo
+      springfox.title: "Play-With-FINT Health Adapter"
+      fint.adapter.organizations: fint.health
+      fint.adapter.sse-endpoint: http://provider:8080/avatar/provider/sse/%s
+      fint.adapter.status-endpoint: http://provider:8080/avatar/provider/status
+      fint.adapter.response-endpoint: http://provider:8080/avatar/provider/response
+     deploy:
+      placement:
+       constraints:
+        - node.role == worker
+      replicas: 1
+      restart_policy:
+       condition: on-failure
+       delay: 5s
+       max_attempts: 3
+       window: 120s
+     depends_on:
+      - provider
