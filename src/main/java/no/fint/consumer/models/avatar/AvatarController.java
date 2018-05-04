@@ -165,10 +165,8 @@ public class AvatarController {
             @RequestParam(required = false, defaultValue = "jpeg") String t) {
         log.info("postAvatar, OrgId: {}, Client: {}, s: {}, t: {}", orgId, client, s, t);
         log.trace("Body: {}", body);
-        Identifikator fakeId = new Identifikator();
-        fakeId.setIdentifikatorverdi("fake");
-        body.setSystemId(fakeId);
-        Optional<AvatarResource> result = cacheService.getAvatarByLink(orgId, linker.toResource(body));
+        linker.mapLinks(body);
+        Optional<AvatarResource> result = cacheService.getAvatarByLink(orgId, body);
 
         if (result.isPresent()) {
             URI location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result.get())).queryParam("s", s).queryParam("t", t).build().toUri();
