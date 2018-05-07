@@ -50,7 +50,7 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
     private ObjectMapper objectMapper;
 
     public AvatarCacheService() {
-        super(MODEL, AvatarActions.GET_ALL_AVATAR, AvatarActions.UPDATE_AVATAR);
+        super(MODEL, AvatarActions.GET_ALL_AVATAR);
         objectMapper = new ObjectMapper();
         javaType = objectMapper.getTypeFactory().constructCollectionType(List.class, AvatarResource.class);
         objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
@@ -96,13 +96,8 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
         data.forEach(linker::toResource);
-        if (AvatarActions.valueOf(event.getAction()) == AvatarActions.UPDATE_AVATAR) {
-            add(event.getOrgId(), data);
-            log.info("Added {} elements to cache for {}", data.size(), event.getOrgId());
-        } else {
-            update(event.getOrgId(), data);
-            log.info("Updated cache for {} with {} elements", event.getOrgId(), data.size());
-        }
+        update(event.getOrgId(), data);
+        log.info("Updated cache for {} with {} elements", event.getOrgId(), data.size());
     }
 
     public Optional<AvatarResource> getAvatarByLink(String orgId, AvatarResource body) {

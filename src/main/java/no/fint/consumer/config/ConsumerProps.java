@@ -23,8 +23,8 @@ public class ConsumerProps {
     @Value("${fint.thumbor.url}")
     private String thumborUrl;
 
-    public static final String CACHE_INITIALDELAY_AVATAR = "${fint.consumer.cache.initialDelay.avatar:60000}";
-    public static final String CACHE_FIXEDRATE_AVATAR = "${fint.consumer.cache.fixedRate.avatar:900000}";
+    public static final String CACHE_INITIALDELAY_AVATAR = "${fint.consumer.image.initialDelay.avatar:60000}";
+    public static final String CACHE_FIXEDRATE_AVATAR = "${fint.consumer.image.fixedRate.avatar:900000}";
 
 }
 

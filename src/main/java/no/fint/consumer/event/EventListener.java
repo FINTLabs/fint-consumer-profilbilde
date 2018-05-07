@@ -3,7 +3,6 @@ package no.fint.consumer.event;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.cache.CacheService;
 import no.fint.consumer.config.ConsumerProps;
-import no.fint.consumer.status.StatusCache;
 import no.fint.event.model.Event;
 import no.fint.events.FintEventListener;
 import no.fint.events.FintEvents;
@@ -25,9 +24,6 @@ public class EventListener implements FintEventListener {
 	private FintEvents fintEvents;
 
     @Autowired
-    StatusCache statusCache;
-
-    @Autowired
     private ConsumerProps props;
 
     @PostConstruct
@@ -42,9 +38,7 @@ public class EventListener implements FintEventListener {
 	public void accept(Event event) {
         log.debug("Received event: {}", event);
         log.trace("Event data: {}", event.getData());
-        if (statusCache.containsKey(event.getCorrId())) {
-            statusCache.put(event.getCorrId(), event);
-        }
+
         String action = event.getAction();
         List<CacheService> supportedCacheServices = cacheServices.stream().filter(cacheService -> cacheService.supportsAction(action)).collect(Collectors.toList());
         if (supportedCacheServices.size() > 0) {

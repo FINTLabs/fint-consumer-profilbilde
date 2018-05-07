@@ -11,26 +11,22 @@ import no.fint.consumer.exceptions.CreateEntityMismatchException;
 import no.fint.consumer.exceptions.EntityFoundException;
 import no.fint.consumer.exceptions.EntityNotFoundException;
 import no.fint.consumer.exceptions.UpdateEntityMismatchException;
-import no.fint.consumer.status.StatusCache;
 import no.fint.consumer.utils.RestEndpoints;
 import no.fint.event.model.Event;
 import no.fint.event.model.HeaderConstants;
 import no.fint.event.model.Status;
 import no.fint.model.avatar.AvatarActions;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.avatar.AvatarResource;
 import no.fint.relations.FintRelationsMediaType;
 import no.fint.relations.FintResources;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.naming.NameNotFoundException;
-import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -53,9 +49,6 @@ public class AvatarController {
 
     @Autowired
     private ConsumerProps props;
-
-    @Autowired
-    private StatusCache statusCache;
 
     @Autowired
     private ConsumerEventUtil consumerEventUtil;
@@ -122,11 +115,11 @@ public class AvatarController {
     }
 
     @GetMapping("/systemid/{id:.+}")
-    public ResponseEntity getAvatarBySystemId(@PathVariable String id,
-                                              @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
-                                              @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
-                                              @RequestParam(required = false) String s,
-                                              @RequestParam(required = false, defaultValue = "jpeg") String t) {
+    public ResponseEntity<?> getAvatarBySystemId(@PathVariable String id,
+                                                              @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
+                                                              @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
+                                                              @RequestParam(required = false) String s,
+                                                              @RequestParam(required = false, defaultValue = "jpeg") String t) {
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
@@ -135,22 +128,25 @@ public class AvatarController {
         }
         log.info("SystemId: {}, OrgId: {}, Client: {}, s: {}, t: {}", id, orgId, client, s, t);
 
-        Event event = new Event(orgId, Constants.COMPONENT, AvatarActions.GET_AVATAR, client);
-        fintAuditService.audit(event);
-
-        fintAuditService.audit(event, Status.CACHE);
-
         Optional<AvatarResource> avatar = cacheService.getAvatarBySystemId(orgId, id);
 
-        fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
-
         if (avatar.isPresent()) {
+            AvatarResource avatarResource = avatar.get();
             if ("json".equalsIgnoreCase(t)) {
-                return ResponseEntity.ok(avatar.get());
+                return ResponseEntity.ok(avatarResource);
             }
             if (!s.contains("x"))
                 s = s + "x" + s;
-            return restTemplate.getForEntity("{host}/{s}/filters:format({t})/{file}", byte[].class, props.getThumborUrl(), s, t, avatar.get().getFilnavn());
+            HttpHeaders headers = new HttpHeaders();
+            if (!StringUtils.isEmpty(avatarResource.getAutorisasjon()))
+                headers.set(HttpHeaders.AUTHORIZATION, avatarResource.getAutorisasjon());
+            headers.set(HeaderConstants.ORG_ID, orgId);
+            headers.set(HeaderConstants.CLIENT, client);
+            return restTemplate.exchange("{host}/{s}/filters:format({t})/{file}",
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    byte[].class,
+                    props.getThumborUrl(), s, t, avatarResource.getFilnavn());
         } else {
             throw new EntityNotFoundException(id);
         }
