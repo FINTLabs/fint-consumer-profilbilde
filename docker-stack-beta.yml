@@ -96,7 +96,7 @@ services:
       - provider
 
   adapter:
-    image: dtr.rogfk.no/fint-beta/avatar-adapter
+    image: dtr.rogfk.no/fint-beta/adapter-avatar
     environment:
       TZ: Europe/Oslo
       fint.adapter.avatar.basedir: /images
