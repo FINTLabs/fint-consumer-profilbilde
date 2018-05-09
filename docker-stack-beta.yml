@@ -26,7 +26,7 @@ services:
      window: 120s
 
   thumbor:
-   image: dtr.rogfk.no/k48402217/thumbor:latest
+   image: dtr.rogfk.no/k48402217/thumbor:6.4.2
    environment:
     TZ: Europe/Oslo
    deploy:
