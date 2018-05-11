@@ -105,6 +105,8 @@ services:
       fint.adapter.sse-endpoint: http://provider:8080/profilbilde/provider/sse/%s
       fint.adapter.status-endpoint: http://provider:8080/profilbilde/provider/status
       fint.adapter.response-endpoint: http://provider:8080/profilbilde/provider/response
+      security.ignored: "/**"
+      security.basic.enabled: "false"
     depends_on:
       - provider
     deploy:
