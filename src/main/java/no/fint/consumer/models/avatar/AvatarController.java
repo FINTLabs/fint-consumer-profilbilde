@@ -36,7 +36,7 @@ import java.util.Optional;
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping(value = RestEndpoints.AVATAR, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
+@RequestMapping(value = RestEndpoints.PROFILBILDE, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
 public class AvatarController {
     @Autowired
     private AvatarCacheService cacheService;

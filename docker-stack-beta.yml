@@ -4,10 +4,10 @@ services:
   provider:
    image: dtr.rogfk.no/fint-beta/provider:PR-9
    ports:
-     - "8400:8080"
+     - "8280:8080"
    environment:
     TZ: Europe/Oslo
-    server.context-path: /avatar/provider
+    server.context-path: /profilbilde/provider
     fint.events.orgIds: "fint.no, fint.health"
     fint.events.component: beta
     fint.events.env: beta
@@ -41,14 +41,14 @@ services:
      window: 120s
 
   consumer:
-   image: dtr.rogfk.no/fint-beta/consumer-avatar
+   image: dtr.rogfk.no/fint-beta/consumer-avatar:0.1.0-1.1.0
    ports:
-     - "8401:8080"
+     - "8281:8080"
    depends_on:
      - thumbor
    environment:
     TZ: Europe/Oslo
-    server.context-path: /avatar
+    server.context-path: /profilbilde
     fint.events.orgIds: "fint.no, fint.health"
     fint.events.component: beta
     fint.events.env: beta
@@ -74,14 +74,14 @@ services:
   health-adapter:
      image: dtr.rogfk.no/fint-beta/health-adapter:1.1.0
      #ports:
-     #  - "8402:8080"
+     #  - "8282:8080"
      environment:
       TZ: Europe/Oslo
       springfox.title: "Play-With-FINT Health Adapter"
       fint.adapter.organizations: fint.health
-      fint.adapter.sse-endpoint: http://provider:8080/avatar/provider/sse/%s
-      fint.adapter.status-endpoint: http://provider:8080/avatar/provider/status
-      fint.adapter.response-endpoint: http://provider:8080/avatar/provider/response
+      fint.adapter.sse-endpoint: http://provider:8080/profilbilde/provider/sse/%s
+      fint.adapter.status-endpoint: http://provider:8080/profilbilde/provider/status
+      fint.adapter.response-endpoint: http://provider:8080/profilbilde/provider/response
      deploy:
       placement:
        constraints:
@@ -102,9 +102,9 @@ services:
       fint.adapter.avatar.basedir: /images
       fint.adapter.avatar.root: http://adapter:8091
       fint.adapter.organizations: fint.no
-      fint.adapter.sse-endpoint: http://provider:8080/avatar/provider/sse/%s
-      fint.adapter.status-endpoint: http://provider:8080/avatar/provider/status
-      fint.adapter.response-endpoint: http://provider:8080/avatar/provider/response
+      fint.adapter.sse-endpoint: http://provider:8080/profilbilde/provider/sse/%s
+      fint.adapter.status-endpoint: http://provider:8080/profilbilde/provider/status
+      fint.adapter.response-endpoint: http://provider:8080/profilbilde/provider/response
     depends_on:
       - provider
     deploy:

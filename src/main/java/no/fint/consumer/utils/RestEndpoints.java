@@ -4,5 +4,5 @@ public enum RestEndpoints {
     ;
 
     public static final String ADMIN = "/admin";
-    public static final String AVATAR = "/avatar";
+    public static final String PROFILBILDE = "/profilbilde";
 }
