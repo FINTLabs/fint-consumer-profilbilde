@@ -128,7 +128,15 @@ public class AvatarController {
         }
         log.info("SystemId: {}, OrgId: {}, Client: {}, s: {}, t: {}", id, orgId, client, s, t);
 
+        Event event = new Event(orgId, Constants.COMPONENT, AvatarActions.GET_AVATAR, client);
+        event.setQuery(id);
+        fintAuditService.audit(event);
+
+        fintAuditService.audit(event, Status.CACHE);
+
         Optional<AvatarResource> avatar = cacheService.getAvatarBySystemId(orgId, id);
+
+        fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
         if (avatar.isPresent()) {
             AvatarResource avatarResource = avatar.get();

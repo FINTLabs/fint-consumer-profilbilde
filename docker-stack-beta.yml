@@ -97,10 +97,13 @@ services:
 
   adapter:
     image: dtr.rogfk.no/fint-beta/adapter-avatar
+    volumes:
+      - "/tmp/images:/images"
     environment:
       TZ: Europe/Oslo
       fint.adapter.avatar.basedir: /images
       fint.adapter.avatar.root: http://adapter:8091
+      fint.adapter.avatar.algorithm: Poly1305
       fint.adapter.organizations: fint.no
       fint.adapter.sse-endpoint: http://provider:8080/profilbilde/provider/sse/%s
       fint.adapter.status-endpoint: http://provider:8080/profilbilde/provider/status

@@ -1,9 +1,11 @@
 package no.fint.consumer.event;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.audit.FintAuditService;
 import no.fint.cache.CacheService;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.event.model.Event;
+import no.fint.event.model.Status;
 import no.fint.events.FintEventListener;
 import no.fint.events.FintEvents;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ public class EventListener implements FintEventListener {
     
 	@Autowired
 	private FintEvents fintEvents;
+
+    @Autowired
+    private FintAuditService fintAuditService;
 
     @Autowired
     private ConsumerProps props;
@@ -43,6 +48,7 @@ public class EventListener implements FintEventListener {
         List<CacheService> supportedCacheServices = cacheServices.stream().filter(cacheService -> cacheService.supportsAction(action)).collect(Collectors.toList());
         if (supportedCacheServices.size() > 0) {
             supportedCacheServices.forEach(cacheService -> cacheService.onAction(event));
+            fintAuditService.audit(event, Status.CACHE);
         } else {
             log.warn("Unhandled event: {}", event);
         }
