@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,9 +101,10 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
 
     public Optional<AvatarResource> getAvatarByLink(String orgId, AvatarResource body) {
         log.debug("Trying to find {} ...", body);
-        return getOne(orgId, avatarResource -> avatarResource.getLinks().keySet().stream().filter(body.getLinks().keySet()::contains).anyMatch(relation -> {
-            log.debug("Checking {}", relation);
-            return avatarResource.getLinks().get(relation).stream().anyMatch(body.getLinks().get(relation)::contains);
+        return getOne(orgId, avatarResource -> avatarResource.getLinks().entrySet().stream()
+                .filter(e -> body.getLinks().keySet().contains(e.getKey())).anyMatch(entry -> {
+                    log.debug("Checking {}", entry);
+                    return entry.getValue().stream().anyMatch(body.getLinks().get(entry.getKey())::contains);
         }));
     }
 }
