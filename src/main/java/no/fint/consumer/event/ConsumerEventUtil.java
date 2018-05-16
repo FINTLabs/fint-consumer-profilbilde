@@ -29,6 +29,7 @@ public class ConsumerEventUtil {
         log.info("Sending health check event {} to {}", event.getAction(), event.getOrgId());
         Event<Health> response = fintEvents.sendHealthCheck(event);
         if (response == null) {
+            fintAuditService.audit(event, Status.NO_RESPONSE_FROM_ADAPTER, Status.SENT_TO_CLIENT);
             return Optional.empty();
         } else {
             fintAuditService.audit(response, Status.SENT_TO_CLIENT);
@@ -43,6 +44,5 @@ public class ConsumerEventUtil {
 
         log.info("Sending event {} to {}", event.getAction(), event.getOrgId());
         fintEvents.sendDownstream(event);
-        fintAuditService.audit(event, Status.SENT_TO_CLIENT);
     }
 }
