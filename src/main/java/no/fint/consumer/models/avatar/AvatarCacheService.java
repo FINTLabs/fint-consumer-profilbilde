@@ -101,6 +101,10 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
     }
 
     public Optional<AvatarResource> getAvatarByLink(String orgId, AvatarResource body) {
-        return getOne(orgId, avatarResource -> avatarResource.getLinks().keySet().stream().filter(body.getLinks().keySet()::contains).collect(Collectors.toList()).stream().anyMatch(relation -> avatarResource.getLinks().get(relation).stream().anyMatch(body.getLinks().get(relation)::contains)));
+        log.debug("Trying to find {} ...", body);
+        return getOne(orgId, avatarResource -> avatarResource.getLinks().keySet().stream().filter(body.getLinks().keySet()::contains).anyMatch(relation -> {
+            log.debug("Checking {}", relation);
+            return avatarResource.getLinks().get(relation).stream().anyMatch(body.getLinks().get(relation)::contains);
+        }));
     }
 }

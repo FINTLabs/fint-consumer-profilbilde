@@ -115,11 +115,12 @@ public class AvatarController {
     }
 
     @GetMapping("/systemid/{id:.+}")
-    public ResponseEntity<?> getAvatarBySystemId(@PathVariable String id,
-                                                              @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
-                                                              @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
-                                                              @RequestParam(required = false) String s,
-                                                              @RequestParam(required = false, defaultValue = "jpeg") String t) {
+    public ResponseEntity<?> getAvatarBySystemId(
+            @PathVariable String id,
+            @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
+            @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
+            @RequestParam(required = false) String s,
+            @RequestParam(required = false, defaultValue = "jpeg") String t) {
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
