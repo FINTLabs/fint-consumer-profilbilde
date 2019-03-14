@@ -21,7 +21,7 @@ metadata:
     fint.service: thumbor
   name: thumbor
 spec:
-  replicas: 1
+  replicas: 3
   strategy: 
     rollingUpdate:
       maxSurge: 2
@@ -59,4 +59,4 @@ spec:
             memory: "128Mi"
         volumeMounts:
           - name: cache
-            mountPath: /cache
+            mountPath: /tmp/thumbor/storage
