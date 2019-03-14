@@ -1,9 +1,9 @@
 package no.fint.consumer.config;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.util.Map;
 
-@Slf4j
 @Configuration
 public class Config {
 
@@ -41,6 +40,7 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        final Logger log = LoggerFactory.getLogger("no.fint.consumer.thumbor");
         return builder
                 .rootUri(thumborUrl)
                 .additionalInterceptors((request, body, execution) -> {
