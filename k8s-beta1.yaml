@@ -56,8 +56,8 @@ spec:
             - {name: fint.hazelcast.kubernetes.labelValue, value: profilbilde}
             - {name: fint.relations.default-base-url, value: 'https://beta1.felleskomponent.no'}
             - {name: server.context-path, value: /profilbilde}
-            - {name: logging.level.no.fint.consumer.models.avatar, value: DEBUG}
-          image: fintlabs.azurecr.io/consumer-profilbilde:build.3
+            - {name: logging.level.no.fint.consumer.thumbor, value: DEBUG}
+          image: fintlabs.azurecr.io/consumer-profilbilde:build.7
           name: consumer-profilbilde
           ports:
             - {containerPort: 8080}
