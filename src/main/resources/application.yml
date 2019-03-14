@@ -1,3 +1,7 @@
 springfox:
   title: '@title@'
   version: '@version@'
+
+fint:
+  thumbor:
+    url: http://thumbor:8888/unsafe

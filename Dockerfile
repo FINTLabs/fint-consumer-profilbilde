@@ -4,8 +4,9 @@ COPY . .
 ARG apiVersion
 RUN gradle --no-daemon -PapiVersion=${apiVersion} build
 
-FROM openjdk:8-jre-alpine
+FROM gcr.io/distroless/java
+ENV JAVA_TOOL_OPTIONS -XX:+ExitOnOutOfMemoryError
 COPY --from=builder /home/gradle/build/deps/external/*.jar /data/
 COPY --from=builder /home/gradle/build/deps/fint/*.jar /data/
-COPY --from=builder /home/gradle/build/libs/fint-consumer-avatar-*.jar /data/fint-consumer-avatar.jar
-CMD ["java", "-jar", "/data/fint-consumer-avatar.jar"]
+COPY --from=builder /home/gradle/build/libs/fint-consumer-profilbilde-*.jar /data/fint-consumer-profilbilde.jar
+CMD ["/data/fint-consumer-profilbilde.jar"]
