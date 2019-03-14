@@ -148,11 +148,11 @@ public class AvatarController {
                 headers.set(HttpHeaders.AUTHORIZATION, avatarResource.getAutorisasjon());
             headers.set(HeaderConstants.ORG_ID, orgId);
             headers.set(HeaderConstants.CLIENT, client);
-            return restTemplate.exchange("{host}/{s}/filters:format({t})/{file}",
+            return restTemplate.exchange("/{s}/filters:format({t})/{file}",
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     byte[].class,
-                    props.getThumborUrl(), s, t, avatarResource.getFilnavn());
+                    s, t, avatarResource.getFilnavn());
         } else {
             throw new EntityNotFoundException(id);
         }

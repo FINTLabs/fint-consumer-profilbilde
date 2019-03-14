@@ -33,9 +33,6 @@ public class ConsumerProps {
         return assets.toArray(new String[0]);
     }
 
-    @Value("${fint.thumbor.url}")
-    private String thumborUrl;
-
     public static final String CACHE_INITIALDELAY_AVATAR = "${fint.consumer.image.initialDelay.avatar:60000}";
     public static final String CACHE_FIXEDRATE_AVATAR = "${fint.consumer.image.fixedRate.avatar:900000}";
 

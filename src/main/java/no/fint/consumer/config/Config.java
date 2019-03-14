@@ -3,10 +3,7 @@ package no.fint.consumer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.hazelcast.config.*;
-import no.fint.cache.CacheManager;
-import no.fint.cache.FintCacheManager;
-import no.fint.cache.HazelcastCacheManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,14 +13,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 public class Config {
 
     @Value("${server.context-path:}")
     private String contextPath;
+
+    @Value("${fint.thumbor.url}")
+    private String thumborUrl;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -41,7 +41,12 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        // Do any additional configuration here
-        return builder.build();
+        return builder
+                .rootUri(thumborUrl)
+                .additionalInterceptors((request, body, execution) -> {
+                    log.debug("{} {}", request.getMethod(), request.getURI());
+                    return execution.execute(request, body);
+                })
+                .build();
     }
 }
