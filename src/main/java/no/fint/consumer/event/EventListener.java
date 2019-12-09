@@ -3,12 +3,15 @@ package no.fint.consumer.event;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.audit.FintAuditService;
 import no.fint.cache.CacheService;
+import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
+import no.fint.event.model.DefaultActions;
 import no.fint.event.model.Event;
 import no.fint.event.model.Status;
 import no.fint.events.FintEventListener;
 import no.fint.events.FintEvents;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -41,6 +44,13 @@ public class EventListener implements FintEventListener {
     		fintEvents.registerUpstreamListener(orgId, this);
     	}
     	log.info("Upstream listeners registered.");
+    }
+
+    @Scheduled(initialDelayString = "${fint.consumer.register-delay:70000}", fixedDelay = Long.MAX_VALUE)
+    public void registerOrgIds() {
+        log.info("Bootstrapping orgId registration ...");
+        Event event = new Event("", Constants.COMPONENT, DefaultActions.REGISTER_ORG_ID, Constants.COMPONENT_CONSUMER);
+        fintEvents.sendDownstream(event);
     }
 
 	@Override

@@ -117,7 +117,7 @@ public class AvatarController {
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
             @RequestParam String s,
-            @RequestParam(required = false, defaultValue = "0,0,0,0,0") String r,
+            @RequestParam(required = false, defaultValue = "0,0,0,0") String r,
             @RequestParam(required = false, defaultValue = "jpeg") String t) {
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
