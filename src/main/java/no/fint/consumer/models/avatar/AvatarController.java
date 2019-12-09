@@ -117,6 +117,7 @@ public class AvatarController {
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
             @RequestParam(required = false) String s,
+            @RequestParam(required = false, defaultValue = "0,0,0,0,0") String r,
             @RequestParam(required = false, defaultValue = "jpeg") String t) {
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
@@ -148,11 +149,12 @@ public class AvatarController {
                 headers.set(HttpHeaders.AUTHORIZATION, avatarResource.getAutorisasjon());
             headers.set(HeaderConstants.ORG_ID, orgId);
             headers.set(HeaderConstants.CLIENT, client);
-            return restTemplate.exchange("/{s}/filters:format({t})/{file}",
+            return restTemplate.exchange("/{s}/filters:round_corner({r}):format({t})/{file}",
                     HttpMethod.GET,
                     new HttpEntity<>(headers),
                     byte[].class,
-                    s, t, avatarResource.getFilnavn());
+                    s, r, t,
+                    avatarResource.getFilnavn());
         } else {
             throw new EntityNotFoundException(id);
         }
