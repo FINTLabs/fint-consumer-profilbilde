@@ -165,7 +165,8 @@ public class ProfilbildeController {
             @RequestHeader(name = HeaderConstants.ORG_ID) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT) String client,
             @RequestBody ProfilbildeResource body,
-            @RequestParam(required = false) String s,
+            @RequestParam String s,
+            @RequestParam(required = false, defaultValue = "0,0,0,0") String r,
             @RequestParam(required = false, defaultValue = "jpeg") String t) {
         log.info("postProfilbilde, OrgId: {}, Client: {}, s: {}, t: {}", orgId, client, s, t);
         log.trace("Body: {}", body);
@@ -173,7 +174,13 @@ public class ProfilbildeController {
         Optional<ProfilbildeResource> result = cacheService.getProfilbildeByLink(orgId, body);
 
         if (result.isPresent()) {
-            URI location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result.get())).queryParam("s", s).queryParam("t", t).build().toUri();
+            URI location = UriComponentsBuilder
+                    .fromUriString(linker.getSelfHref(result.get()))
+                    .queryParam("s", s)
+                    .queryParam("t", t)
+                    .queryParam("r", r)
+                    .build()
+                    .toUri();
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(location).build();
         } else {
             return ResponseEntity.notFound().build();
