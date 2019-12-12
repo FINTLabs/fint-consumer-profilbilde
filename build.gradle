@@ -34,7 +34,7 @@ repositories {
 }
 
 dependencies {
-    compile("no.fint:fint-avatar-resource-model-java:${apiVersion}")
+    compile("no.fint:fint-profilbilde-resource-model-java:${apiVersion}")
     
     compile('no.fint:fint-event-model:3.0.0')
     compile('no.fint:fint-relations:2.0.0')
