@@ -116,12 +116,16 @@ public class ProfilbildeCacheService extends CacheService<ProfilbildeResource> {
                 .flatMap(List::stream)
                 .map(Link::getHref)
                 .map(link -> getOne(orgId, link.hashCode(),
-                        e -> e.getLinks()
-                                .values()
-                                .stream()
-                                .flatMap(List::stream)
-                                .map(Link::getHref)
-                                .anyMatch(link::equals)))
+                        e -> {
+                            log.debug("Hashcode match: {}", e);
+                            return e.getLinks()
+                                    .values()
+                                    .stream()
+                                    .flatMap(List::stream)
+                                    .map(Link::getHref)
+                                    .anyMatch(link::equals);
+                        }
+                ))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findAny();

@@ -46,6 +46,7 @@ spec:
             - name: fint.audit.mongo.connection-string
               valueFrom:
                 secretKeyRef: {key: mongodb, name: fint-audit}
+            - {name: fint.audit.mongo.collection, value: auditEvents}
             - {name: fint.cache.manager, value: default}
             - {name: fint.events.orgIds, value: health.fintlabs.no}
             - {name: fint.consumer.default-org-id, value: fintlabs.no}
@@ -57,7 +58,7 @@ spec:
             - {name: fint.relations.default-base-url, value: 'https://beta1.felleskomponent.no'}
             - {name: server.context-path, value: /profilbilde}
             - {name: logging.level.no.fint.consumer.thumbor, value: DEBUG}
-          image: fintlabs.azurecr.io/consumer-profilbilde:build.12
+          image: fintlabs.azurecr.io/consumer-profilbilde:PR-2.2
           name: consumer-profilbilde
           ports:
             - {containerPort: 8080}
@@ -94,6 +95,7 @@ spec:
             - name: fint.audit.mongo.connection-string
               valueFrom:
                 secretKeyRef: {key: mongodb, name: fint-audit}
+            - {name: fint.audit.mongo.collection, value: auditEvents}
             - {name: fint.events.orgIds, value: health.fintlabs.no}
             - {name: fint.hazelcast.kubernetes.enabled, value: 'true'}
             - {name: fint.hazelcast.kubernetes.namespace, value: default}
