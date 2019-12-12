@@ -8,6 +8,12 @@ import no.fint.relations.FintLinker;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
+
+import static java.util.Objects.isNull;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @Component
 public class ProfilbildeLinker extends FintLinker<ProfilbildeResource> {
@@ -33,5 +39,22 @@ public class ProfilbildeLinker extends FintLinker<ProfilbildeResource> {
     @Override
     public String getSelfHref(ProfilbildeResource profilbilde) {
         return createHrefWithId(profilbilde.getSystemId().getIdentifikatorverdi(), "systemid");
+    }
+
+    public int[] hashCodes(ProfilbildeResource profilbildeResource) {
+        IntStream.Builder builder = IntStream.builder();
+        if (!isNull(profilbildeResource.getSystemId()) && !isEmpty(profilbildeResource.getSystemId().getIdentifikatorverdi())) {
+            builder.add(profilbildeResource.getSystemId().getIdentifikatorverdi().hashCode());
+        }
+        return IntStream.concat(
+                builder.build(),
+                profilbildeResource
+                        .getLinks()
+                        .values()
+                        .stream()
+                        .flatMap(List::stream)
+                        .map(Link::getHref)
+                        .mapToInt(Objects::hashCode))
+                .toArray();
     }
 }

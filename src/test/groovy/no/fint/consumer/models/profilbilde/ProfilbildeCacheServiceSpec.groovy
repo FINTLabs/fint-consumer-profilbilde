@@ -1,5 +1,6 @@
 package no.fint.consumer.models.profilbilde
 
+import no.fint.cache.model.CacheObject
 import no.fint.consumer.config.FintTestConfiguration
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -30,9 +31,8 @@ class ProfilbildeCacheServiceSpec extends Specification {
                         "person": [Link.with('${person}/fodselsnummer/234567')]
                 ])
         ]
-        linker.toResources(resources)
         profilbildeCacheService.createCache('mock.no')
-        profilbildeCacheService.add('mock.no', resources)
+        profilbildeCacheService.addCache('mock.no', resources.each { linker.mapLinks(it) }.collect { new CacheObject<>(it, linker.hashCodes(it)) } )
     }
 
     def 'Get Profilbilde A by ansattnummer 12345 using keyword link'() {
