@@ -58,13 +58,13 @@ spec:
             - {name: fint.relations.default-base-url, value: 'https://beta1.felleskomponent.no'}
             - {name: server.context-path, value: /profilbilde}
             - {name: logging.level.no.fint.consumer.thumbor, value: DEBUG}
-          image: fintlabs.azurecr.io/consumer-profilbilde:PR-2.2
+          image: fintlabs.azurecr.io/consumer-profilbilde:PR-2.4
           name: consumer-profilbilde
           ports:
             - {containerPort: 8080}
           readinessProbe:
             httpGet: {path: /profilbilde/health, port: 8080}
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             timeoutSeconds: 5
           resources:
             limits: {memory: 3Gi, cpu: '2'}
