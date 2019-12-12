@@ -1,4 +1,4 @@
-package no.fint.consumer.models.avatar;
+package no.fint.consumer.models.profilbilde;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -12,9 +12,9 @@ import no.fint.consumer.utils.RestEndpoints;
 import no.fint.event.model.Event;
 import no.fint.event.model.HeaderConstants;
 import no.fint.event.model.Status;
-import no.fint.model.avatar.AvatarActions;
-import no.fint.model.resource.avatar.AvatarResource;
-import no.fint.model.resource.avatar.AvatarResources;
+import no.fint.model.profilbilde.ProfilbildeActions;
+import no.fint.model.resource.profilbilde.ProfilbildeResource;
+import no.fint.model.resource.profilbilde.ProfilbildeResources;
 import no.fint.relations.FintRelationsMediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -34,15 +34,15 @@ import java.util.Optional;
 @CrossOrigin
 @RestController
 @RequestMapping(value = RestEndpoints.PROFILBILDE, produces = {FintRelationsMediaType.APPLICATION_HAL_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
-public class AvatarController {
+public class ProfilbildeController {
     @Autowired
-    private AvatarCacheService cacheService;
+    private ProfilbildeCacheService cacheService;
 
     @Autowired
     private FintAuditService fintAuditService;
 
     @Autowired
-    private AvatarLinker linker;
+    private ProfilbildeLinker linker;
 
     @Autowired
     private ConsumerProps props;
@@ -82,7 +82,7 @@ public class AvatarController {
     }
 
     @GetMapping
-    public AvatarResources getAvatar(
+    public ProfilbildeResources getProfilbilde(
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
             @RequestParam(required = false) Long sinceTimeStamp) {
@@ -94,25 +94,25 @@ public class AvatarController {
         }
         log.info("OrgId: {}, Client: {}", orgId, client);
 
-        Event event = new Event(orgId, Constants.COMPONENT, AvatarActions.GET_ALL_AVATAR, client);
+        Event event = new Event(orgId, Constants.COMPONENT, ProfilbildeActions.GET_ALL_PROFILBILDE, client);
         fintAuditService.audit(event);
 
         fintAuditService.audit(event, Status.CACHE);
 
-        List<AvatarResource> avatar;
+        List<ProfilbildeResource> profilbilde;
         if (sinceTimeStamp == null) {
-            avatar = cacheService.getAll(orgId);
+            profilbilde = cacheService.getAll(orgId);
         } else {
-            avatar = cacheService.getAll(orgId, sinceTimeStamp);
+            profilbilde = cacheService.getAll(orgId, sinceTimeStamp);
         }
 
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
-        return linker.toResources(avatar);
+        return linker.toResources(profilbilde);
     }
 
     @GetMapping("/systemid/{id:.+}")
-    public ResponseEntity<?> getAvatarBySystemId(
+    public ResponseEntity<?> getProfilbildeBySystemId(
             @PathVariable String id,
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
@@ -127,26 +127,26 @@ public class AvatarController {
         }
         log.info("SystemId: {}, OrgId: {}, Client: {}, s: {}, t: {}", id, orgId, client, s, t);
 
-        Event event = new Event(orgId, Constants.COMPONENT, AvatarActions.GET_AVATAR, client);
+        Event event = new Event(orgId, Constants.COMPONENT, ProfilbildeActions.GET_PROFILBILDE, client);
         event.setQuery(id);
         fintAuditService.audit(event);
 
         fintAuditService.audit(event, Status.CACHE);
 
-        Optional<AvatarResource> avatar = cacheService.getAvatarBySystemId(orgId, id);
+        Optional<ProfilbildeResource> profilbilde = cacheService.getProfilbildeBySystemId(orgId, id);
 
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
-        if (avatar.isPresent()) {
-            AvatarResource avatarResource = avatar.get();
+        if (profilbilde.isPresent()) {
+            ProfilbildeResource profilbildeResource = profilbilde.get();
             if ("json".equalsIgnoreCase(t)) {
-                return ResponseEntity.ok(avatarResource);
+                return ResponseEntity.ok(profilbildeResource);
             }
             if (!s.contains("x"))
                 s = s + "x" + s;
             HttpHeaders headers = new HttpHeaders();
-            if (!StringUtils.isEmpty(avatarResource.getAutorisasjon()))
-                headers.set(HttpHeaders.AUTHORIZATION, avatarResource.getAutorisasjon());
+            if (!StringUtils.isEmpty(profilbildeResource.getAutorisasjon()))
+                headers.set(HttpHeaders.AUTHORIZATION, profilbildeResource.getAutorisasjon());
             headers.set(HeaderConstants.ORG_ID, orgId);
             headers.set(HeaderConstants.CLIENT, client);
             return restTemplate.exchange("/{s}/filters:round_corner({r}):format({t})/{file}",
@@ -154,23 +154,23 @@ public class AvatarController {
                     new HttpEntity<>(headers),
                     byte[].class,
                     s, r, t,
-                    avatarResource.getFilnavn());
+                    profilbildeResource.getFilnavn());
         } else {
             throw new EntityNotFoundException(id);
         }
     }
 
     @PostMapping
-    public ResponseEntity postAvatar(
+    public ResponseEntity postProfilbilde(
             @RequestHeader(name = HeaderConstants.ORG_ID) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT) String client,
-            @RequestBody AvatarResource body,
+            @RequestBody ProfilbildeResource body,
             @RequestParam(required = false) String s,
             @RequestParam(required = false, defaultValue = "jpeg") String t) {
-        log.info("postAvatar, OrgId: {}, Client: {}, s: {}, t: {}", orgId, client, s, t);
+        log.info("postProfilbilde, OrgId: {}, Client: {}, s: {}, t: {}", orgId, client, s, t);
         log.trace("Body: {}", body);
         linker.mapLinks(body);
-        Optional<AvatarResource> result = cacheService.getAvatarByLink(orgId, body);
+        Optional<ProfilbildeResource> result = cacheService.getProfilbildeByLink(orgId, body);
 
         if (result.isPresent()) {
             URI location = UriComponentsBuilder.fromUriString(linker.getSelfHref(result.get())).queryParam("s", s).queryParam("t", t).build().toUri();

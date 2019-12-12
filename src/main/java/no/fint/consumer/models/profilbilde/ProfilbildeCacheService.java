@@ -1,4 +1,4 @@
-package no.fint.consumer.models.avatar;
+package no.fint.consumer.models.profilbilde;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +9,9 @@ import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.consumer.event.ConsumerEventUtil;
 import no.fint.event.model.Event;
-import no.fint.model.avatar.AvatarActions;
+import no.fint.model.profilbilde.ProfilbildeActions;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
-import no.fint.model.resource.avatar.AvatarResource;
+import no.fint.model.resource.profilbilde.ProfilbildeResource;
 import no.fint.relations.FintResourceCompatibility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +25,9 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class AvatarCacheService extends CacheService<AvatarResource> {
+public class ProfilbildeCacheService extends CacheService<ProfilbildeResource> {
 
-    public static final String MODEL = "avatar";
+    public static final String MODEL = "profilbilde";
 
     @Value("${fint.consumer.compatibility.fintresource:true}")
     private boolean checkFintResourceCompatibility;
@@ -42,16 +42,16 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
     private ConsumerProps props;
 
     @Autowired
-    private AvatarLinker linker;
+    private ProfilbildeLinker linker;
 
     private JavaType javaType;
 
     private ObjectMapper objectMapper;
 
-    public AvatarCacheService() {
-        super(MODEL, AvatarActions.GET_ALL_AVATAR);
+    public ProfilbildeCacheService() {
+        super(MODEL, ProfilbildeActions.GET_ALL_PROFILBILDE);
         objectMapper = new ObjectMapper();
-        javaType = objectMapper.getTypeFactory().constructCollectionType(List.class, AvatarResource.class);
+        javaType = objectMapper.getTypeFactory().constructCollectionType(List.class, ProfilbildeResource.class);
         objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
@@ -60,7 +60,7 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
         Arrays.stream(props.getOrgs()).forEach(this::createCache);
     }
 
-    @Scheduled(initialDelayString = ConsumerProps.CACHE_INITIALDELAY_AVATAR, fixedRateString = ConsumerProps.CACHE_FIXEDRATE_AVATAR)
+    @Scheduled(initialDelayString = ConsumerProps.CACHE_INITIALDELAY_PROFILBILDE, fixedRateString = ConsumerProps.CACHE_FIXEDRATE_PROFILBILDE)
     public void populateCacheAll() {
         Arrays.stream(props.getOrgs()).forEach(this::populateCache);
     }
@@ -71,15 +71,15 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
     }
 
     private void populateCache(String orgId) {
-        log.info("Populating Avatar cache for {}", orgId);
-        Event event = new Event(orgId, Constants.COMPONENT, AvatarActions.GET_ALL_AVATAR, Constants.CACHE_SERVICE);
+        log.info("Populating Profilbilde cache for {}", orgId);
+        Event event = new Event(orgId, Constants.COMPONENT, ProfilbildeActions.GET_ALL_PROFILBILDE, Constants.CACHE_SERVICE);
         consumerEventUtil.send(event);
     }
 
-    public Optional<AvatarResource> getAvatarBySystemId(String orgId, String systemId) {
+    public Optional<ProfilbildeResource> getProfilbildeBySystemId(String orgId, String systemId) {
         return getOne(orgId, (resource) -> Optional
                 .ofNullable(resource)
-                .map(AvatarResource::getSystemId)
+                .map(ProfilbildeResource::getSystemId)
                 .map(Identifikator::getIdentifikatorverdi)
                 .map(_id -> _id.equals(systemId))
                 .orElse(false));
@@ -87,10 +87,10 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
 
     @Override
     public void onAction(Event event) {
-        List<AvatarResource> data;
+        List<ProfilbildeResource> data;
         if (checkFintResourceCompatibility && fintResourceCompatibility.isFintResourceData(event.getData())) {
-            log.info("Compatibility: Converting FintResource<AvatarResource> to AvatarResource ...");
-            data = fintResourceCompatibility.convertResourceData(event.getData(), AvatarResource.class);
+            log.info("Compatibility: Converting FintResource<ProfilbildeResource> to ProfilbildeResource ...");
+            data = fintResourceCompatibility.convertResourceData(event.getData(), ProfilbildeResource.class);
         } else {
             data = objectMapper.convertValue(event.getData(), javaType);
         }
@@ -99,9 +99,9 @@ public class AvatarCacheService extends CacheService<AvatarResource> {
         log.info("Updated cache for {} with {} elements", event.getOrgId(), data.size());
     }
 
-    public Optional<AvatarResource> getAvatarByLink(String orgId, AvatarResource body) {
+    public Optional<ProfilbildeResource> getProfilbildeByLink(String orgId, ProfilbildeResource body) {
         log.debug("Trying to find {} ...", body);
-        return getOne(orgId, avatarResource -> avatarResource.getLinks().entrySet().stream()
+        return getOne(orgId, profilbildeResource -> profilbildeResource.getLinks().entrySet().stream()
                 .filter(e -> body.getLinks().keySet().contains(e.getKey())).anyMatch(entry -> {
                     log.debug("Checking {}", entry);
                     return entry.getValue().stream().anyMatch(body.getLinks().get(entry.getKey())::contains);

@@ -41,7 +41,7 @@ services:
      window: 120s
 
   consumer:
-   image: dtr.rogfk.no/fint-beta/consumer-avatar:0.1.0-1.1.0
+   image: dtr.rogfk.no/fint-beta/consumer-profilbilde:0.1.0-1.1.0
    ports:
      - "8281:8080"
    depends_on:
@@ -96,14 +96,14 @@ services:
       - provider
 
   adapter:
-    image: dtr.rogfk.no/fint-beta/adapter-avatar
+    image: dtr.rogfk.no/fint-beta/adapter-profilbilde
     volumes:
       - "/tmp/images:/images"
     environment:
       TZ: Europe/Oslo
-      fint.adapter.avatar.basedir: /images
-      fint.adapter.avatar.root: http://adapter:8091
-      fint.adapter.avatar.algorithm: Poly1305
+      fint.adapter.profilbilde.basedir: /images
+      fint.adapter.profilbilde.root: http://adapter:8091
+      fint.adapter.profilbilde.algorithm: Poly1305
       fint.adapter.organizations: fint.no
       fint.adapter.sse-endpoint: http://provider:8080/profilbilde/provider/sse/%s
       fint.adapter.status-endpoint: http://provider:8080/profilbilde/provider/status
