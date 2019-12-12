@@ -57,7 +57,7 @@ spec:
             - {name: fint.relations.default-base-url, value: 'https://beta1.felleskomponent.no'}
             - {name: server.context-path, value: /profilbilde}
             - {name: logging.level.no.fint.consumer.thumbor, value: DEBUG}
-          image: fintlabs.azurecr.io/consumer-profilbilde:build.10
+          image: fintlabs.azurecr.io/consumer-profilbilde:build.12
           name: consumer-profilbilde
           ports:
             - {containerPort: 8080}
@@ -102,7 +102,7 @@ spec:
             - {name: fint.provider.max-number-of-emitters, value: '5'}
             - {name: server.context-path, value: /profilbilde/provider}
             - {name: fint.provider.assets.endpoint, value: 'https://admin.fintlabs.no/api/components/assets/profilbilde'}
-          image: fintlabs.azurecr.io/provider:2.1.0
+          image: fintlabs.azurecr.io/provider:2.2.0
           name: provider-profilbilde
           ports:
             - {containerPort: 8080}
