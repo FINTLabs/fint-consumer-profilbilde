@@ -39,7 +39,12 @@ spec:
       labels: {fint.stack: profilbilde, fint.role: consumer}
     spec:
       containers:
-        - env:
+        - envFrom:
+          - configMapRef:
+              name: fint-environment
+          - secretRef:
+              name: fint-events-azure-eventhub
+          env:
             - {name: TZ, value: Europe/Oslo}
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx2G -verbose:gc'}
             - {name: fint.audit.mongo.databasename, value: fint-audit-beta}
@@ -58,7 +63,8 @@ spec:
             - {name: fint.relations.default-base-url, value: 'https://beta1.felleskomponent.no'}
             - {name: server.context-path, value: /profilbilde}
             - {name: logging.level.no.fint.consumer.thumbor, value: DEBUG}
-          image: fintlabs.azurecr.io/consumer-profilbilde:PR-2.4
+            - {name: logging.level.no.fint.audit.plugin.eventhub, value: debug}
+          image: fintlabs.azurecr.io/consumer-profilbilde:build.14
           name: consumer-profilbilde
           ports:
             - {containerPort: 8080}
@@ -88,7 +94,12 @@ spec:
       labels: {fint.stack: profilbilde, fint.role: provider}
     spec:
       containers:
-        - env:
+        - envFrom:
+          - configMapRef:
+              name: fint-environment
+          - secretRef:
+              name: fint-events-azure-eventhub
+          env:
             - {name: TZ, value: Europe/Oslo}
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx2G -verbose:gc'}
             - {name: fint.audit.mongo.databasename, value: fint-audit-beta}
@@ -104,7 +115,8 @@ spec:
             - {name: fint.provider.max-number-of-emitters, value: '5'}
             - {name: server.context-path, value: /profilbilde/provider}
             - {name: fint.provider.assets.endpoint, value: 'https://admin.fintlabs.no/api/components/assets/profilbilde'}
-          image: fintlabs.azurecr.io/provider:2.2.0
+            - {name: logging.level.no.fint.audit.plugin.eventhub, value: debug}
+          image: fintlabs.azurecr.io/provider:2.3.0-alpha-2
           name: provider-profilbilde
           ports:
             - {containerPort: 8080}
