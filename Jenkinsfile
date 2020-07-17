@@ -1,6 +1,6 @@
 pipeline {
     parameters {
-        string(name: 'BUILD_FLAGS', defaultValue: '', description: 'Gradle build flags')
+        string(name: 'BUILD_FLAGS', defaultValue: '-Peventhub', description: 'Gradle build flags')
     }
     agent { label 'docker' }
     stages {
@@ -17,18 +17,18 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/consumer-profilbilde:build.${BUILD_NUMBER}"
-                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
-                    sh "docker push fintlabs.azurecr.io/consumer-profilbilde:build.${BUILD_NUMBER}"
+                sh "docker tag ${GIT_COMMIT} fintlabsacr.azurecr.io/consumer-profilbilde:build.${BUILD_NUMBER}"
+                withDockerRegistry([credentialsId: 'fintlabsacr.azurecr.io', url: 'https://fintlabsacr.azurecr.io']) {
+                    sh "docker push fintlabsacr.azurecr.io/consumer-profilbilde:build.${BUILD_NUMBER}"
                 }
             }
         }
         stage('Publish PR') {
             when { changeRequest() }
             steps {
-                sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/consumer-profilbilde:${BRANCH_NAME}.${BUILD_NUMBER}"
-                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
-                    sh "docker push fintlabs.azurecr.io/consumer-profilbilde:${BRANCH_NAME}.${BUILD_NUMBER}"
+                sh "docker tag ${GIT_COMMIT} fintlabsacr.azurecr.io/consumer-profilbilde:${BRANCH_NAME}.${BUILD_NUMBER}"
+                withDockerRegistry([credentialsId: 'fintlabsacr.azurecr.io', url: 'https://fintlabsacr.azurecr.io']) {
+                    sh "docker push fintlabsacr.azurecr.io/consumer-profilbilde:${BRANCH_NAME}.${BUILD_NUMBER}"
                 }
             }
         }
@@ -40,9 +40,9 @@ pipeline {
                 script {
                     VERSION = TAG_NAME[1..-1]
                 }
-                sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/consumer-profilbilde:${VERSION}"
-                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
-                    sh "docker push fintlabs.azurecr.io/consumer-profilbilde:${VERSION}"
+                sh "docker tag ${GIT_COMMIT} fintlabsacr.azurecr.io/consumer-profilbilde:${VERSION}"
+                withDockerRegistry([credentialsId: 'fintlabsacr.azurecr.io', url: 'https://fintlabsacr.azurecr.io']) {
+                    sh "docker push fintlabsacr.azurecr.io/consumer-profilbilde:${VERSION}"
                 }
             }
         }
