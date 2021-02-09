@@ -7,8 +7,8 @@ spec:
     fint.service: thumbor
   type: ClusterIP
   ports:
-  - port: 8888
-    targetPort: 8888
+  - port: 80
+    targetPort: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -40,12 +40,12 @@ spec:
           emptyDir: {}
       containers:
       - name: thumbor
-        image: fintlabs.azurecr.io/thumbor:6.5.2-2
+        image: minimalcompact/thumbor:6.7.5
         ports:
-          - containerPort: 8888
+          - containerPort: 80
         readinessProbe:
           httpGet:
-            port: 8888
+            port: 80
             path: /healthcheck
         env:
         - name: TZ
