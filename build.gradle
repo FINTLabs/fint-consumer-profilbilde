@@ -36,12 +36,8 @@ repositories {
 dependencies {
     compile("no.fint:fint-profilbilde-resource-model-java:${apiVersion}")
 
-    if (project.hasProperty("eventhub")) {
-        compile('no.fint:fint-audit-azure-eventhub-plugin:0.3.0')
-        compile('io.projectreactor:reactor-core:3.3.2.RELEASE')
-    } else {
-        compile('no.fint:fint-audit-mongo-plugin:1.7.0-rc-2')
-    }
+    compile('no.fint:fint-audit-azure-eventhub-plugin:0.3.0')
+    compile('io.projectreactor:reactor-core:3.3.2.RELEASE')  
 
     compile('no.fint:fint-event-model:3.0.0')
     compile('no.fint:fint-relations:2.0.0')
