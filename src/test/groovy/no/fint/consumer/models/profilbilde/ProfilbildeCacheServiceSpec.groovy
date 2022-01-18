@@ -2,6 +2,7 @@ package no.fint.consumer.models.profilbilde
 
 import no.fint.cache.model.CacheObject
 import no.fint.consumer.config.FintTestConfiguration
+import no.fint.consumer.event.SynchronousEvents
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.profilbilde.ProfilbildeResource
@@ -9,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
-@ContextConfiguration(classes = [ProfilbildeCacheService.class, ProfilbildeLinker.class, FintTestConfiguration.class])
+@ContextConfiguration(classes = [SynchronousEvents.class, ProfilbildeCacheService.class, ProfilbildeLinker.class, FintTestConfiguration.class])
 class ProfilbildeCacheServiceSpec extends Specification {
 
     @Autowired
