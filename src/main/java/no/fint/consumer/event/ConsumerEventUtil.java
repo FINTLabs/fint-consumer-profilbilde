@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -21,28 +23,34 @@ public class ConsumerEventUtil {
     @Autowired
     private FintAuditService fintAuditService;
 
+    @Autowired
+    private SynchronousEvents synchronousEvents;
+
     public Optional<Event<Health>> healthCheck(Event<Health> event) {
-        fintAuditService.audit(event);
+        log.debug("Sending health check event {} to {}", event.getAction(), event.getOrgId());
 
-        fintAuditService.audit(event, Status.DOWNSTREAM_QUEUE);
+        BlockingQueue<Event> queue = synchronousEvents.register(event);
+        send(event);
 
-        log.info("Sending health check event {} to {}", event.getAction(), event.getOrgId());
-        Event<Health> response = fintEvents.sendHealthCheck(event);
-        if (response == null) {
-            fintAuditService.audit(event, Status.NO_RESPONSE_FROM_ADAPTER, Status.SENT_TO_CLIENT);
+        try {
+            Event<Health> response = queue.poll(30, TimeUnit.SECONDS);
+            if (response != null) {
+                fintAuditService.audit(response, Status.SENT_TO_CLIENT);
+                return Optional.of(response);
+            } else {
+                fintAuditService.audit(event, Status.NO_RESPONSE_FROM_ADAPTER, Status.SENT_TO_CLIENT);
+                return Optional.empty();
+            }
+        } catch (InterruptedException e) {
+            fintAuditService.audit(event, Status.ERROR);
             return Optional.empty();
-        } else {
-            fintAuditService.audit(response, Status.SENT_TO_CLIENT);
-            return Optional.of(response);
         }
     }
 
     public void send(Event event) {
         fintAuditService.audit(event);
-
         fintAuditService.audit(event, Status.DOWNSTREAM_QUEUE);
-
-        log.info("Sending event {} to {}", event.getAction(), event.getOrgId());
+        log.debug("Sending event {} to {}", event.getAction(), event.getOrgId());
         fintEvents.sendDownstream(event);
     }
 }

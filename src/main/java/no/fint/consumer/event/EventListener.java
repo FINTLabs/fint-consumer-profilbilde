@@ -5,10 +5,9 @@ import no.fint.audit.FintAuditService;
 import no.fint.cache.CacheService;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
-import no.fint.event.model.DefaultActions;
-import no.fint.event.model.Event;
-import no.fint.event.model.ResponseStatus;
-import no.fint.event.model.Status;
+import no.fint.consumer.metrics.CustomMetricEvents;
+import no.fint.consumer.status.StatusCache;
+import no.fint.event.model.*;
 import no.fint.events.FintEventListener;
 import no.fint.events.FintEvents;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -24,7 +23,7 @@ import java.util.List;
 @Component
 public class EventListener implements FintEventListener {
 
-    @Autowired
+    @Autowired(required = false)
     private List<CacheService> cacheServices;
 
     @Autowired
@@ -34,14 +33,23 @@ public class EventListener implements FintEventListener {
     private FintAuditService fintAuditService;
 
     @Autowired
+    StatusCache statusCache;
+
+    @Autowired
     private ConsumerProps props;
+
+    @Autowired
+    private SynchronousEvents synchronousEvents;
+
+    @Autowired(required = false)
+    private CustomMetricEvents customMetricEvents;
 
     @PostConstruct
     public void init() {
         fintEvents.registerUpstreamSystemListener(this);
         if (cacheServices == null)
             cacheServices = Collections.emptyList();
-        for (String orgId : props.getOrgs()) {
+        for (String orgId : props.getAssets()) {
             fintEvents.registerUpstreamListener(orgId, this);
         }
         log.info("Upstream listeners registered.");
@@ -68,14 +76,31 @@ public class EventListener implements FintEventListener {
                 });
             }
             return;
-        } else if (event.isHealthCheck()) {
+        }
+
+        try {
+            customMetricEvents.update(event);
+        } catch (Exception ignored) {
+        }
+
+        if (statusCache.containsKey(event.getCorrId())) {
+            statusCache.put(event.getCorrId(), event);
+        }
+        if (synchronousEvents.dispatch(event)) {
+            return;
+        }
+        if (event.getOperation() == Operation.VALIDATE) {
+            log.debug("Ignoring validation event.");
+            return;
+        }
+        if (event.isHealthCheck()) {
             log.debug("Ignoring health check.");
             return;
-        } else if (event.getResponseStatus() == ResponseStatus.REJECTED || event.getResponseStatus() == ResponseStatus.ERROR) {
+        }
+        if (event.getResponseStatus() == ResponseStatus.REJECTED || event.getResponseStatus() == ResponseStatus.ERROR) {
             log.debug("Ignoring response status {}", event.getResponseStatus());
             return;
         }
-
         try {
             cacheServices
                     .stream()
@@ -88,5 +113,4 @@ public class EventListener implements FintEventListener {
             fintAuditService.audit(event, Status.ERROR);
         }
     }
-
 }

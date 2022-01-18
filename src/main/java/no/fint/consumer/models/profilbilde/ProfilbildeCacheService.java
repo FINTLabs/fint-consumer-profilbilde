@@ -60,12 +60,12 @@ public class ProfilbildeCacheService extends CacheService<ProfilbildeResource> {
 
     @PostConstruct
     public void init() {
-        Arrays.stream(props.getOrgs()).forEach(this::createCache);
+        props.getAssets().forEach(this::createCache);
     }
 
-    @Scheduled(initialDelayString = ConsumerProps.CACHE_INITIALDELAY_PROFILBILDE, fixedRateString = ConsumerProps.CACHE_FIXEDRATE_PROFILBILDE)
+    @Scheduled(initialDelayString = Constants.CACHE_INITIALDELAY_PROFILBILDE, fixedRateString = Constants.CACHE_FIXEDRATE_PROFILBILDE)
     public void populateCacheAll() {
-        Arrays.stream(props.getOrgs()).forEach(this::populateCache);
+        props.getAssets().forEach(this::populateCache);
     }
 
     public void rebuildCache(String orgId) {

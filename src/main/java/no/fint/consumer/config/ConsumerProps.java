@@ -22,6 +22,9 @@ public class ConsumerProps {
     @Value("${fint.consumer.default-org-id:fint.no}")
     private String defaultOrgId;
 
+    @Value("${fint.consumer.status.created:false}")
+    private boolean useCreated;
+
     private Set<String> assets;
 
     @Autowired
@@ -33,8 +36,4 @@ public class ConsumerProps {
         return assets.toArray(new String[0]);
     }
 
-    public static final String CACHE_INITIALDELAY_PROFILBILDE = "${fint.consumer.image.initialDelay.profilbilde:60000}";
-    public static final String CACHE_FIXEDRATE_PROFILBILDE = "${fint.consumer.image.fixedRate.profilbilde:900000}";
-
 }
-

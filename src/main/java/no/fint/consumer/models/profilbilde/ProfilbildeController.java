@@ -7,10 +7,13 @@ import no.fint.audit.FintAuditService;
 import no.fint.consumer.config.Constants;
 import no.fint.consumer.config.ConsumerProps;
 import no.fint.consumer.event.ConsumerEventUtil;
+import no.fint.consumer.event.SynchronousEvents;
 import no.fint.consumer.exceptions.*;
+import no.fint.consumer.status.StatusCache;
 import no.fint.consumer.utils.RestEndpoints;
 import no.fint.event.model.Event;
 import no.fint.event.model.HeaderConstants;
+import no.fint.event.model.Operation;
 import no.fint.event.model.Status;
 import no.fint.model.profilbilde.ProfilbildeActions;
 import no.fint.model.resource.profilbilde.ProfilbildeResource;
@@ -18,17 +21,21 @@ import no.fint.model.resource.profilbilde.ProfilbildeResources;
 import no.fint.relations.FintRelationsMediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.util.StringUtils;
+//import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.naming.NameNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @CrossOrigin
@@ -51,13 +58,22 @@ public class ProfilbildeController {
     private ConsumerEventUtil consumerEventUtil;
 
     @Autowired
+    private StatusCache statusCache;
+
+    @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SynchronousEvents synchronousEvents;
 
     @Autowired
     private RestTemplate restTemplate;
 
     @GetMapping("/last-updated")
     public Map<String, String> getLastUpdated(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
+        if (cacheService == null) {
+            throw new CacheDisabledException("Anmerkninger cache is disabled.");
+        }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
@@ -67,48 +83,88 @@ public class ProfilbildeController {
 
     @GetMapping("/cache/size")
     public ImmutableMap<String, Integer> getCacheSize(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
+        if (cacheService == null) {
+            throw new CacheDisabledException("Anmerkninger cache is disabled.");
+        }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
-        return ImmutableMap.of("size", cacheService.getAll(orgId).size());
+        return ImmutableMap.of("size", cacheService.getCacheSize(orgId));
     }
 
-    @PostMapping("/cache/rebuild")
-    public void rebuildCache(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
-        if (props.isOverrideOrgId() || orgId == null) {
-            orgId = props.getDefaultOrgId();
-        }
-        cacheService.rebuildCache(orgId);
-    }
+//    @PostMapping("/cache/rebuild")
+//    public void rebuildCache(@RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId) {
+//        if (props.isOverrideOrgId() || orgId == null) {
+//            orgId = props.getDefaultOrgId();
+//        }
+//        cacheService.rebuildCache(orgId);
+//    }
 
     @GetMapping
     public ProfilbildeResources getProfilbilde(
             @RequestHeader(name = HeaderConstants.ORG_ID, required = false) String orgId,
             @RequestHeader(name = HeaderConstants.CLIENT, required = false) String client,
-            @RequestParam(required = false) Long sinceTimeStamp) {
+            @RequestParam(required = false) Long sinceTimeStamp,
+            @RequestParam(defaultValue = "0") int size,
+            @RequestParam(defaultValue = "0") int offset,
+            HttpServletRequest request) {
+
+        if (cacheService == null) {
+            throw new CacheDisabledException("Profilbilde cache is disabled.");
+        }
         if (props.isOverrideOrgId() || orgId == null) {
             orgId = props.getDefaultOrgId();
         }
         if (client == null) {
             client = props.getDefaultClient();
         }
-        log.info("OrgId: {}, Client: {}", orgId, client);
+        log.debug("OrgId: {}, Client: {}", orgId, client);
 
         Event event = new Event(orgId, Constants.COMPONENT, ProfilbildeActions.GET_ALL_PROFILBILDE, client);
+        event.setOperation(Operation.READ);
+        if (StringUtils.isNotBlank(request.getQueryString())) {
+            event.setQuery("?" + request.getQueryString());
+        }
         fintAuditService.audit(event);
-
         fintAuditService.audit(event, Status.CACHE);
 
-        List<ProfilbildeResource> profilbilde;
-        if (sinceTimeStamp == null) {
-            profilbilde = cacheService.getAll(orgId);
+        Stream<ProfilbildeResource> resources;
+        if (size > 0 && offset >= 0 && sinceTimeStamp > 0) {
+            resources = cacheService.streamSliceSince(orgId, sinceTimeStamp, offset, size);
+        } else if (size > 0 && offset >= 0) {
+            resources = cacheService.streamSlice(orgId, offset, size);
+        } else if (sinceTimeStamp > 0) {
+            resources = cacheService.streamSince(orgId, sinceTimeStamp);
         } else {
-            profilbilde = cacheService.getAll(orgId, sinceTimeStamp);
+            resources = cacheService.streamAll(orgId);
         }
 
         fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
 
-        return linker.toResources(profilbilde);
+        return linker.toResources(resources, offset, size, cacheService.getCacheSize(orgId));
+//        if (props.isOverrideOrgId() || orgId == null) {
+//            orgId = props.getDefaultOrgId();
+//        }
+//        if (client == null) {
+//            client = props.getDefaultClient();
+//        }
+//        log.info("OrgId: {}, Client: {}", orgId, client);
+//
+//        Event event = new Event(orgId, Constants.COMPONENT, ProfilbildeActions.GET_ALL_PROFILBILDE, client);
+//        fintAuditService.audit(event);
+//
+//        fintAuditService.audit(event, Status.CACHE);
+//
+//        List<ProfilbildeResource> profilbilde;
+//        if (sinceTimeStamp == null) {
+//            profilbilde = cacheService.getAll(orgId);
+//        } else {
+//            profilbilde = cacheService.getAll(orgId, sinceTimeStamp);
+//        }
+//
+//        fintAuditService.audit(event, Status.CACHE_RESPONSE, Status.SENT_TO_CLIENT);
+//
+//        return linker.toResources(profilbilde);
     }
 
     @GetMapping("/systemid/{id:.+}")

@@ -1,5 +1,6 @@
 package no.fint.consumer.models.profilbilde;
 
+import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.profilbilde.ProfilbildeResource;
@@ -11,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 import static org.springframework.util.StringUtils.isEmpty;
@@ -24,12 +26,15 @@ public class ProfilbildeLinker extends FintLinker<ProfilbildeResource> {
 
     @Override
     public ProfilbildeResources toResources(Collection<ProfilbildeResource> collection) {
-        ProfilbildeResources resources = new ProfilbildeResources();
-        collection.stream().map(this::toResource).forEach(resources::addResource);
-        resources.addSelf(Link.with(self()));
-        return resources;
-
+        return toResources(collection.stream(), 0, 0, collection.size());
     }
+
+    @Override
+    public ProfilbildeResources toResources(Stream<ProfilbildeResource> stream, int i, int i1, int i2) {
+        ProfilbildeResources resources = new ProfilbildeResources();
+        stream.map(this::toResource).forEach(resources::addResource);
+        resources.addSelf(Link.with(self()));
+        return resources;    }
 
     @Override
     public void mapLinks(FintLinks resource) {
