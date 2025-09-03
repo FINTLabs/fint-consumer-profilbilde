@@ -11,6 +11,7 @@ import no.fint.relations.config.FintRelationsProps;
 import no.fint.relations.internal.FintLinkMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import spock.mock.DetachedMockFactory;
 import spock.mock.MockFactory;
 
@@ -30,8 +31,13 @@ public class FintTestConfiguration {
     }
 
     @Bean
+    Environment environment() {
+        return environment();
+    }
+
+    @Bean
     FintLinkMapper fintLinkMapper() {
-        return new FintLinkMapper();
+        return new FintLinkMapper(environment(), fintRelationsProps());
     }
 
     @Bean
